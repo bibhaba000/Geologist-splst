@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>GeoExpert</title>
-  <link rel="icon" href="https://9040401.fs1.hubspotusercontent-na1.net/hubfs/9040401/bainsymbol_dig_red_100x100px.webp" type="image/webp">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23E60028'/%3E%3Cpath d='M50 14a36 36 0 1 0 0 72 36 36 0 0 0 0-72zm0 8c4 6 4 14 0 20-5 2-11 1-15-2 3-9 8-16 15-18zm-22 22c5 5 13 6 19 3 4 6 4 14 0 20-3 4-9 6-14 5a28 28 0 0 1-5-28zm30 45c-4-6-4-13 0-19 5-2 11-2 16 1a28 28 0 0 1-16 18z' fill='white'/%3E%3C/svg%3E" type="image/svg+xml">
   <style>
     :root {
       --prism-red:        #E60028;
@@ -26,6 +26,7 @@
     }
 
     * { box-sizing: border-box; }
+    button, textarea, .chip { -webkit-tap-highlight-color: transparent; }
 
     html, body {
       height: 100%;
@@ -47,10 +48,10 @@
     /* ---------- Header ---------- */
     .site-header { position: sticky; top: 0; z-index: 20; background:#FFFFFF; border-bottom:1px solid #E5E5E5; box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06); }
     .header-inner { display:flex; align-items:center; justify-content:space-between; max-width:1200px; margin:0 auto; padding:14px 24px; gap:20px; }
-    .brand { display:flex; align-items:center; gap:12px; }
-    .brand-logo { height:34px; width:auto; display:block; }
-    .brand-divider { width:1px; height:22px; background:#E5E5E5; flex-shrink:0; }
-    .brand-title { font-size:1rem; font-weight:800; color:#1A1A1A; }
+    .brand { display:flex; align-items:center; gap:10px; }
+    .brand-mark { display:flex; flex-shrink:0; }
+    .brand-mark svg { width:30px; height:30px; display:block; }
+    .brand-title { font-size:1.05rem; font-weight:800; color:#1A1A1A; letter-spacing:-0.01em; }
     .user-info { text-align:right; }
     .user-name-row { display:flex; align-items:center; justify-content:flex-end; gap:5px; font-size:0.9rem; color:#1A1A1A; }
     .verified-tick { width:15px; height:15px; color:#E60028; flex-shrink:0; }
@@ -212,19 +213,38 @@
       color: var(--text-primary);
     }
 
-    /* Typing indicator */
-    .typing { display: inline-flex; align-items: center; gap: 5px; padding: 4px 2px; }
-    .typing span {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--prism-red);
-      opacity: 0.4;
-      animation: typing-bounce 1.2s infinite ease-in-out;
+    /* Claude-style "thinking" indicator: a breathing spark + shimmer text */
+    .thinking { display: inline-flex; align-items: center; gap: 9px; padding: 2px 0; }
+    .thinking-spark {
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+      color: var(--prism-red);
+      animation: spark-breathe 1.4s ease-in-out infinite;
+      transform-origin: center;
     }
-    .typing span:nth-child(2) { animation-delay: 0.18s; }
-    .typing span:nth-child(3) { animation-delay: 0.36s; }
-    @keyframes typing-bounce {
-      0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
-      30% { opacity: 1; transform: translateY(-4px); }
+    .thinking-spark svg { width: 100%; height: 100%; display: block; }
+    @keyframes spark-breathe {
+      0%, 100% { transform: scale(0.7) rotate(0deg);   opacity: 0.55; }
+      50%      { transform: scale(1) rotate(90deg);    opacity: 1; }
+    }
+    .thinking-text {
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: linear-gradient(90deg, #B8B8BD 0%, #B8B8BD 35%, #1A1A1A 50%, #B8B8BD 65%, #B8B8BD 100%);
+      background-size: 220% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      animation: shimmer 1.8s linear infinite;
+    }
+    @keyframes shimmer {
+      0%   { background-position: 120% 0; }
+      100% { background-position: -120% 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .thinking-spark { animation: none; }
+      .thinking-text { animation: none; -webkit-text-fill-color: var(--text-muted); color: var(--text-muted); }
     }
 
     /* ---------- Input bar ---------- */
@@ -282,10 +302,20 @@
     /* ---------- Mobile ---------- */
     @media (max-width: 640px) {
       .header-inner { padding: 12px 16px; }
-      .brand-logo { height: 28px; }
+      .brand-mark svg { width: 26px; height: 26px; }
+      .brand-title { font-size: 1rem; }
       .user-email { display: none; }
       .bubble { max-width: 92%; }
       .chat-inner { padding: 18px 14px 26px; }
+      .empty-state { padding: 16px 4px; }
+      .empty-state .geo-mark { font-size: 2.2rem; }
+      .empty-state h1 { font-size: 1.18rem; }
+      .empty-state p { font-size: 0.9rem; }
+      .chips { gap: 8px; }
+      .chip { padding: 9px 14px; font-size: 0.85rem; }
+      /* 16px input stops iOS Safari from auto-zooming on focus */
+      #composer { font-size: 16px; }
+      .input-bar { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); }
     }
   </style>
 </head>
@@ -293,10 +323,12 @@
   <header class="site-header">
     <div class="header-inner">
       <div class="brand">
-        <img class="brand-logo"
-          src="https://www.npsprism.com/hs-fs/hubfs/Prism%20logo%20new%20redpng-1.png?width=540&name=Prism%20logo%20new%20redpng-1.png"
-          alt="NPS Prism">
-        <span class="brand-divider" aria-hidden="true"></span>
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="46" fill="#E60028"/>
+            <path d="M50 14a36 36 0 1 0 0 72 36 36 0 0 0 0-72zm0 8c4 6 4 14 0 20-5 2-11 1-15-2 3-9 8-16 15-18zm-22 22c5 5 13 6 19 3 4 6 4 14 0 20-3 4-9 6-14 5a28 28 0 0 1-5-28zm30 45c-4-6-4-13 0-19 5-2 11-2 16 1a28 28 0 0 1-16 18z" fill="white"/>
+          </svg>
+        </span>
         <span class="brand-title">GeoExpert</span>
       </div>
       <div class="user-info">
@@ -370,275 +402,4 @@
       const codes = [];
       text = text.replace(/`([^`]+)`/g, (_, c) => {
         codes.push(c);
-        return " CODE" + (codes.length - 1) + " ";
-      });
-      text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-      text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>");
-      text = text.replace(/ CODE(\d+) /g, (_, i) =>
-        '<code class="inline">' + codes[Number(i)] + "</code>"
-      );
-      return text;
-    }
-
-    function renderMarkdown(raw) {
-      const src = escapeHtml(raw);
-      const parts = [];           // assembled HTML blocks
-      const lines = src.split("\n");
-      let i = 0;
-      let para = [];              // buffer for paragraph lines
-      let list = null;            // { type: "ul" | "ol", items: [] }
-
-      function flushPara() {
-        if (para.length) {
-          parts.push("<p>" + renderInline(para.join(" ")) + "</p>");
-          para = [];
-        }
-      }
-      function flushList() {
-        if (list) {
-          const tag = list.type;
-          parts.push(
-            "<" + tag + ">" +
-            list.items.map((it) => "<li>" + renderInline(it) + "</li>").join("") +
-            "</" + tag + ">"
-          );
-          list = null;
-        }
-      }
-
-      while (i < lines.length) {
-        const line = lines[i];
-
-        // Fenced code block
-        const fence = line.match(/^```(.*)$/);
-        if (fence) {
-          flushPara();
-          flushList();
-          const buf = [];
-          i++;
-          while (i < lines.length && !/^```/.test(lines[i])) {
-            buf.push(lines[i]);
-            i++;
-          }
-          i++; // skip closing fence
-          parts.push("<pre><code>" + buf.join("\n") + "</code></pre>");
-          continue;
-        }
-
-        // Headings
-        const h = line.match(/^(#{1,3})\s+(.*)$/);
-        if (h) {
-          flushPara();
-          flushList();
-          const level = h[1].length;
-          parts.push("<h" + level + ">" + renderInline(h[2]) + "</h" + level + ">");
-          i++;
-          continue;
-        }
-
-        // Unordered list
-        const ul = line.match(/^\s*[-*]\s+(.*)$/);
-        if (ul) {
-          flushPara();
-          if (!list || list.type !== "ul") { flushList(); list = { type: "ul", items: [] }; }
-          list.items.push(ul[1]);
-          i++;
-          continue;
-        }
-
-        // Ordered list
-        const ol = line.match(/^\s*\d+\.\s+(.*)$/);
-        if (ol) {
-          flushPara();
-          if (!list || list.type !== "ol") { flushList(); list = { type: "ol", items: [] }; }
-          list.items.push(ol[1]);
-          i++;
-          continue;
-        }
-
-        // Blank line => break paragraph / list
-        if (line.trim() === "") {
-          flushPara();
-          flushList();
-          i++;
-          continue;
-        }
-
-        // Regular text line
-        flushList();
-        para.push(line.trim());
-        i++;
-      }
-
-      flushPara();
-      flushList();
-      return parts.join("");
-    }
-
-    // ---------- Rendering helpers ----------
-    function isNearBottom() {
-      return chatScroll.scrollHeight - chatScroll.scrollTop - chatScroll.clientHeight < 120;
-    }
-    function scrollToBottom() {
-      chatScroll.scrollTop = chatScroll.scrollHeight;
-    }
-
-    function hideEmptyState() {
-      if (emptyState && emptyState.parentNode) {
-        emptyState.parentNode.removeChild(emptyState);
-      }
-    }
-
-    function addUserBubble(text) {
-      const wrap = document.createElement("div");
-      wrap.className = "msg user";
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.textContent = text; // plain text, never HTML
-      wrap.appendChild(bubble);
-      chatInner.appendChild(wrap);
-      scrollToBottom();
-    }
-
-    // Returns the bubble element for the assistant message.
-    function addAssistantBubble() {
-      const wrap = document.createElement("div");
-      wrap.className = "msg assistant";
-
-      const label = document.createElement("div");
-      label.className = "assistant-label";
-      label.textContent = "Dr. Strata";
-
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-
-      const typing = document.createElement("div");
-      typing.className = "typing";
-      typing.innerHTML = "<span></span><span></span><span></span>";
-      bubble.appendChild(typing);
-
-      wrap.appendChild(label);
-      wrap.appendChild(bubble);
-      chatInner.appendChild(wrap);
-      scrollToBottom();
-      return bubble;
-    }
-
-    // ---------- Composer ----------
-    function autoGrow() {
-      composer.style.height = "auto";
-      composer.style.height = Math.min(composer.scrollHeight, 132) + "px";
-    }
-    composer.addEventListener("input", autoGrow);
-
-    composer.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        send();
-      }
-    });
-
-    sendBtn.addEventListener("click", send);
-
-    // Example chips
-    document.getElementById("chips").addEventListener("click", (e) => {
-      const chip = e.target.closest(".chip");
-      if (!chip || streaming) return;
-      composer.value = chip.textContent;
-      autoGrow();
-      send();
-    });
-
-    function setStreaming(on) {
-      streaming = on;
-      sendBtn.disabled = on;
-      composer.disabled = on;
-    }
-
-    // ---------- Send & stream ----------
-    async function send() {
-      if (streaming) return;
-      const text = composer.value.trim();
-      if (!text) return;
-
-      hideEmptyState();
-
-      // Push + render user turn
-      messages.push({ role: "user", content: text });
-      addUserBubble(text);
-
-      composer.value = "";
-      autoGrow();
-      setStreaming(true);
-
-      const bubble = addAssistantBubble();
-      let acc = "";
-      let firstChunk = true;
-
-      try {
-        const res = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages }),
-        });
-
-        if (!res.ok || !res.body) {
-          let msg = "Something went wrong reaching the server.";
-          try {
-            const data = await res.json();
-            if (data && data.error) msg = data.error + (data.detail ? " (" + data.detail + ")" : "");
-          } catch (_) { /* non-JSON error */ }
-          showError(bubble, msg);
-          setStreaming(false);
-          composer.focus();
-          return;
-        }
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          if (!chunk) continue;
-
-          if (firstChunk) {
-            bubble.innerHTML = ""; // remove typing dots
-            firstChunk = false;
-          }
-          acc += chunk;
-          const nearBottom = isNearBottom();
-          bubble.innerHTML = renderMarkdown(acc);
-          if (nearBottom) scrollToBottom();
-        }
-
-        if (firstChunk) {
-          // Stream ended with no content
-          showError(bubble, "The geologist had nothing to say — please try again.");
-          setStreaming(false);
-          composer.focus();
-          return;
-        }
-
-        messages.push({ role: "assistant", content: acc });
-      } catch (err) {
-        showError(bubble, "Connection interrupted. Please check your network and try again.");
-      } finally {
-        if (streaming) setStreaming(false);
-        composer.focus();
-        if (isNearBottom()) scrollToBottom();
-      }
-    }
-
-    function showError(bubble, text) {
-      bubble.classList.add("error");
-      bubble.textContent = text;
-      scrollToBottom();
-    }
-
-    // Initial focus
-    composer.focus();
-  </script>
-</body>
-</html>
+        return "
